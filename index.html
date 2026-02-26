@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة السجلات المركزي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Kufi Arabic', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .bg-app {
+            background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)), 
+                        url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-field {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #000 !important; padding: 10px; text-align: center; color: black !important; }
+            th { background-color: #f3f4f6 !important; }
+        }
+        .print-only { display: none; }
+        .hidden-element { display: none !important; }
+    </style>
+</head>
+<body class="bg-app flex items-center justify-center p-4 overflow-x-hidden">
+
+    <!-- شاشة تسجيل الدخول -->
+    <div id="login-container" class="w-full max-w-md p-6 glass rounded-[2.5rem] shadow-2xl">
+        <div class="text-center mb-10">
+            <div class="w-20 h-20 bg-blue-600 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-xl shadow-blue-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-black">بوابة إدارة السجلات</h1>
+            <p class="text-slate-400 text-xs mt-2 font-bold tracking-widest uppercase opacity-60">نظام الحماية المركزي</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">نوع الصلاحية</label>
+                <select id="login-role" class="input-field w-full p-4 rounded-2xl text-sm cursor-pointer">
+                    <option value="admin">مدير (صلاحية كاملة)</option>
+                    <option value="guest">زائر (صلاحية عرض)</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">اسم المستخدم</label>
+                <input type="text" id="username" class="input-field w-full p-4 rounded-2xl text-sm" placeholder="أدخل الاسم">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">كلمة المرور</label>
+                <input type="password" id="password" class="input-field w-full p-4 rounded-2xl text-sm" placeholder="••••••••">
+            </div>
+            <p id="login-error" class="text-rose-500 text-[10px] font-bold hidden text-center">خطأ في البيانات، يرجى المحاولة مرة أخرى</p>
+            <button onclick="handleLogin()" class="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-lg shadow-blue-500/20 transition-all mt-6">دخول النظام</button>
+        </div>
+    </div>
+
+    <!-- الواجهة الرئيسية -->
+    <div id="main-app" class="w-full max-w-7xl mx-auto hidden-element no-print self-start pt-10 px-4">
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-10 gap-6">
+            <div class="flex items-center gap-5">
+                <div class="p-4 bg-blue-600 rounded-[1.5rem] shadow-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H5m14 0h-2a4 4 0 00-4 4v2m-1-10a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black">قاعدة بيانات القوى البشرية</h2>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span id="role-badge" class="text-[10px] px-3 py-1 rounded-full font-black uppercase"></span>
+                        <span id="save-msg" class="text-[9px] text-emerald-400 font-bold hidden italic">● جارِ الحفظ التلقائي...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button id="admin-print-btn" onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-500/10 transition-all">طباعة التقرير</button>
+                <button onclick="logout()" class="bg-rose-600 hover:bg-rose-500 px-8 py-3.5 rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/10">خروج</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <!-- نموذج الإدخال (للمدير) -->
+            <div id="editor-col" class="lg:col-span-4">
+                <div class="glass p-8 rounded-[2.5rem] sticky top-8">
+                    <h3 class="font-bold text-lg mb-8 flex items-center gap-3">
+                        <span class="w-2 h-7 bg-blue-500 rounded-full"></span>
+                        إضافة قيد جديد
+                    </h3>
+                    <form id="recordForm" class="space-y-5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="num" placeholder="النمرة" class="input-field p-4 rounded-xl text-sm">
+                            <select id="rank" class="input-field p-4 rounded-xl text-sm cursor-pointer">
+                                <option value="" disabled selected>الرتبة</option>
+                                <option>لواء</option><option>عميد</option><option>عقيد</option><option>مقدم</option>
+                                <option>رائد</option><option>نقيب</option><option>م.اول</option><option>ملازم</option>
+                                <option>مساعد</option><option>ر.اول</option><option>رقيب</option><option>عريف</option>
+                            </select>
+                        </div>
+                        <input type="text" id="name" placeholder="الاسم الرباعي الكامل" class="input-field p-4 rounded-xl text-sm w-full">
+                        <input type="text" id="spec" placeholder="التخصص أو الوظيفة" class="input-field p-4 rounded-xl text-sm w-full">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" id="age" placeholder="العمر" class="input-field p-4 rounded-xl text-sm">
+                            <input type="text" id="address" placeholder="مكان السكن" class="input-field p-4 rounded-xl text-sm">
+                        </div>
+                        <button type="button" onclick="submitRecord()" class="w-full py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black shadow-xl transition-all mt-4">حفظ السجل في القاعدة</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- عرض البيانات -->
+            <div id="viewer-col" class="lg:col-span-8">
+                <div class="glass rounded-[2.5rem] overflow-hidden">
+                    <div class="p-6 bg-white/5 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-white/5">
+                        <input type="text" id="search" oninput="drawTable()" placeholder="ابحث بالنمرة أو الاسم..." class="input-field p-3 rounded-xl text-xs w-full md:w-80">
+                        <div class="bg-black/40 px-6 py-2 rounded-xl border border-white/5">
+                            <span class="text-[10px] text-slate-400 font-bold ml-2">الإجمالي:</span>
+                            <span id="count-label" class="text-blue-400 font-black">0</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right">
+                            <thead class="bg-black/40 text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">
+                                <tr>
+                                    <th class="p-6">النمرة</th>
+                                    <th class="p-6">الرتبة</th>
+                                    <th class="p-6">الاسم الكامل</th>
+                                    <th class="p-6">التخصص</th>
+                                    <th id="th-actions" class="p-6 text-center">تحكم</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-data" class="text-sm divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- طباعة التقرير -->
+    <div class="print-only text-black w-full p-4">
+        <div class="text-center border-b-4 border-double border-black pb-8 mb-10">
+            <h1 class="text-3xl font-bold">المملكة - وزارة الدفاع</h1>
+            <h2 class="text-xl mt-3">كشف بيانات الأفراد والموظفين السنوي</h2>
+            <p class="text-xs mt-6 italic">تاريخ التقرير: <span id="print-date-label"></span></p>
+        </div>
+        <table class="w-full">
+            <thead>
+                <tr>
+                    <th>النمرة</th><th>الرتبة</th><th>الاسم الكامل</th><th>التخصص</th><th>السكن</th>
+                </tr>
+            </thead>
+            <tbody id="print-table-rows"></tbody>
+        </table>
+        <div class="mt-24 flex justify-around items-center px-12">
+            <div class="text-center"><p class="font-bold underline decoration-2 underline-offset-8">توقيع ضابط السجلات</p><div class="h-20"></div></div>
+            <div class="text-center font-bold">الختم الرسمي للمركز</div>
+            <div class="text-center"><p class="font-bold underline decoration-2 underline-offset-8">المصادقة والاعتماد</p><div class="h-20"></div></div>
+        </div>
+    </div>
+
+    <script>
+        // كلمات السر الافتراضية
+        const CREDENTIALS = {
+            admin: { user: 'admin', pass: '123456' },
+            guest: { user: 'guest', pass: 'guest2024' }
+        };
+
+        let storage = JSON.parse(localStorage.getItem('MASTER_DB')) || [];
+        let currentSessionRole = null;
+
+        function handleLogin() {
+            const role = document.getElementById('login-role').value;
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const err = document.getElementById('login-error');
+
+            if (u === CREDENTIALS[role].user && p === CREDENTIALS[role].pass) {
+                err.classList.add('hidden');
+                startApp(role);
+            } else {
+                err.classList.remove('hidden');
+            }
+        }
+
+        function startApp(role) {
+            currentSessionRole = role;
+            document.getElementById('login-container').classList.add('hidden-element');
+            document.getElementById('main-app').classList.remove('hidden-element');
+            document.body.classList.remove('flex', 'items-center', 'justify-center');
+
+            const badge = document.getElementById('role-badge');
+            badge.innerText = role === 'admin' ? 'صلاحية مدير عام' : 'صلاحية مشاهدة سجلات';
+            badge.className = `text-[10px] px-3 py-1 rounded-full font-black uppercase ${role === 'admin' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' : 'bg-slate-500/20 text-slate-400 border border-slate-500/20'}`;
+
+            if (role === 'guest') {
+                document.getElementById('editor-col').classList.add('hidden-element');
+                document.getElementById('viewer-col').classList.replace('lg:col-span-8', 'lg:col-span-12');
+                document.getElementById('th-actions').classList.add('hidden-element');
+                document.getElementById('admin-print-btn').classList.add('hidden-element');
+            } else {
+                activateAutosave();
+            }
+
+            drawTable();
+        }
+
+        function activateAutosave() {
+            const ids = ['num', 'rank', 'name', 'spec', 'age', 'address'];
+            ids.forEach(id => {
+                document.getElementById(id).addEventListener('input', () => {
+                    const draft = {};
+                    ids.forEach(f => draft[f] = document.getElementById(f).value);
+                    localStorage.setItem('RECORD_DRAFT', JSON.stringify(draft));
+                    showSaveStatus();
+                });
+            });
+            const saved = JSON.parse(localStorage.getItem('RECORD_DRAFT'));
+            if (saved) ids.forEach(id => document.getElementById(id).value = saved[id] || '');
+        }
+
+        function submitRecord() {
+            const r = {
+                num: document.getElementById('num').value,
+                rank: document.getElementById('rank').value,
+                name: document.getElementById('name').value,
+                spec: document.getElementById('spec').value,
+                age: document.getElementById('age').value,
+                address: document.getElementById('address').value
+            };
+
+            if (!r.num || !r.name) return alert('خطأ: النمرة والاسم حقول إلزامية');
+
+            storage.push(r);
+            localStorage.setItem('MASTER_DB', JSON.stringify(storage));
+            localStorage.removeItem('RECORD_DRAFT');
+            document.getElementById('recordForm').reset();
+            drawTable();
+        }
+
+        function drawTable() {
+            const q = document.getElementById('search').value.toLowerCase();
+            const body = document.getElementById('table-data');
+            const pRows = document.getElementById('print-table-rows');
+            body.innerHTML = '';
+            pRows.innerHTML = '';
+
+            storage.filter(x => x.name.toLowerCase().includes(q) || x.num.includes(q))
+            .forEach((x, i) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-white/5 transition-all";
+                tr.innerHTML = `
+                    <td class="p-6 font-bold text-blue-400">${x.num}</td>
+                    <td class="p-6"><span class="bg-blue-500/10 text-blue-400 px-3 py-1 rounded-lg text-[10px] font-black">${x.rank}</span></td>
+                    <td class="p-6 font-bold text-slate-200">${x.name}</td>
+                    <td class="p-6 text-slate-400 text-xs">${x.spec}</td>
+                    ${currentSessionRole === 'admin' ? `<td class="p-6 text-center"><button onclick="deleteRecord(${i})" class="text-rose-500 hover:text-rose-300 font-bold text-xs">حذف</button></td>` : ''}
+                `;
+                body.appendChild(tr);
+
+                const ptr = document.createElement('tr');
+                ptr.innerHTML = `<td>${x.num}</td><td>${x.rank}</td><td>${x.name}</td><td>${x.spec}</td><td>${x.address}</td>`;
+                pRows.appendChild(ptr);
+            });
+
+            document.getElementById('count-label').innerText = storage.length;
+            document.getElementById('print-date-label').innerText = new Date().toLocaleString('ar-SA');
+        }
+
+        function deleteRecord(i) {
+            if (confirm('تنبيه: سيتم حذف هذا السجل نهائياً، هل تود المتابعة؟')) {
+                storage.splice(i, 1);
+                localStorage.setItem('MASTER_DB', JSON.stringify(storage));
+                drawTable();
+            }
+        }
+
+        function showSaveStatus() {
+            const el = document.getElementById('save-msg');
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 1000);
+        }
+
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
